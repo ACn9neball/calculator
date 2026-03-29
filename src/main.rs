@@ -154,3 +154,39 @@ fn render(frame: &mut Frame) {
     frame.render_widget(Paragraph::new("=").block(zero_border.clone()), equal);
     frame.render_widget(Paragraph::new("+").block(zero_border.clone()), add);
 }
+
+fn bodmas(question: String) -> f64 {
+    let mut equation: Vec<String> = vec![];
+    let mut value: String = "".to_string();
+    for c in question.chars() {
+        if c.is_numeric() {
+            value = format!("{}{}", value, c);
+        } else {
+            if value != "".to_string() {
+                equation.push(value.clone());
+                value = "".to_string();
+            }
+            if !c.is_whitespace() {
+                equation.push(c.to_string());
+            }
+        }
+    }
+    if value != "".to_string() {
+        equation.push(value);
+    }
+
+    for i in 0..equation.len() {
+        if equation[i] == "(" {
+            equation[i].pop();
+            let mut stop = false;
+            let mut index = i + 1;
+            while !stop {
+                if equation[index] == ")" {
+                    stop == true;
+                    equation[index].pop();
+                }
+            }
+        }
+    }
+    return 0.0;
+}
