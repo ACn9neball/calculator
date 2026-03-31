@@ -155,7 +155,45 @@ fn render(frame: &mut Frame) {
     frame.render_widget(Paragraph::new("+").block(zero_border.clone()), add);
 }
 
-fn bodmas(question: String) -> f64 {
+fn bodmas(question: String) {
+    let mut equation: Vec<String> = split_all(question);
+    let mut brackets = false;
+    let mut index = 0;
+
+    while equation.len() > 1 {
+        if !brackets {
+            if equation[index].as_str() == "(" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 1)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation);
+                        equation[index] = mini_answer[0].clone();
+                        for j in (index + 1)..=i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    brackets = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else {
+            equation = dmas(equation);
+        }
+    }
+    let answer = dmas(equation);
+    println!("{}", answer[0]);
+}
+
+fn split_all(question: String) -> Vec<String> {
     let mut equation: Vec<String> = vec![];
     let mut value: String = "".to_string();
     for c in question.chars() {
@@ -174,19 +212,85 @@ fn bodmas(question: String) -> f64 {
     if value != "".to_string() {
         equation.push(value);
     }
+    println!("{:?}", equation);
+    equation
+}
 
-    for i in 0..equation.len() {
-        if equation[i] == "(" {
-            equation[i].pop();
-            let mut stop = false;
-            let mut index = i + 1;
-            while !stop {
-                if equation[index] == ")" {
-                    stop == true;
-                    equation[index].pop();
+fn dmas(mut equation: Vec<String>) -> Vec<String> {
+    let mut index = 0;
+    let mut divide = false;
+    let mut multiply = false;
+    let mut add = false;
+    let mut subtract = false;
+
+    while equation.len() > 1 {
+        if !divide {
+            if equation[index].as_str() == "/" {
+                let digits: Vec<f64> = numbers(&equation[index - 1], &equation[index + 1]);
+                equation[index - 1] = (digits[0] / digits[1]).to_string();
+                equation.remove(index);
+                equation.remove(index);
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    divide = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !multiply {
+            if equation[index].as_str() == "*" {
+                let digits: Vec<f64> = numbers(&equation[index - 1], &equation[index + 1]);
+                equation[index - 1] = (digits[0] * digits[1]).to_string();
+                equation.remove(index);
+                equation.remove(index);
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    multiply = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !add {
+            if equation[index].as_str() == "+" {
+                let digits: Vec<f64> = numbers(&equation[index - 1], &equation[index + 1]);
+                equation[index - 1] = (digits[0] + digits[1]).to_string();
+                equation.remove(index);
+                equation.remove(index);
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    add = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !subtract {
+            if equation[index].as_str() == "-" {
+                let digits: Vec<f64> = numbers(&equation[index - 1], &equation[index + 1]);
+                equation[index - 1] = (digits[0] - digits[1]).to_string();
+                equation.remove(index);
+                equation.remove(index);
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    subtract = true;
+                } else {
+                    index += 1;
                 }
             }
         }
     }
-    return 0.0;
+    return equation;
+}
+
+fn numbers(num1: &str, num2: &str) -> Vec<f64> {
+    let value1: f64 = num1.parse().unwrap_or(0.0);
+    let value2: f64 = num2.parse().unwrap_or(0.0);
+    vec![value1, value2]
 }
