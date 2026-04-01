@@ -1,3 +1,6 @@
+use std::fmt::format;
+
+use color_eyre::eyre::Ok;
 use ratatui::{
     Frame,
     crossterm::event::{self, Event, KeyCode},
@@ -5,28 +8,57 @@ use ratatui::{
     style::{Color, Style},
     widgets::{Block, Borders, Paragraph},
 };
+use ratatui_textarea::TextArea;
 
 pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
+    let mut edt_answer = TextArea::default();
     ratatui::run(|terminal| {
         loop {
-            terminal.draw(|frame| render(frame))?;
+            terminal.draw(|frame| render(frame, &mut edt_answer))?;
             if let Event::Key(key) = event::read()? {
-                if key.code == KeyCode::Esc {
-                    break Ok(());
+                match key.code {
+                    KeyCode::Esc => break Ok(()),
+                    KeyCode::Enter => {
+                        let question: String = edt_answer.lines().join("\n");
+                        let answer = bodmas(question);
+                        edt_answer.insert_str(format!(" = {}", &answer));
+                    }
+                    KeyCode::Char('0') => edt_answer.insert_char('0'),
+                    KeyCode::Char('1') => edt_answer.insert_char('1'),
+                    KeyCode::Char('2') => edt_answer.insert_char('2'),
+                    KeyCode::Char('3') => edt_answer.insert_char('3'),
+                    KeyCode::Char('4') => edt_answer.insert_char('4'),
+                    KeyCode::Char('5') => edt_answer.insert_char('5'),
+                    KeyCode::Char('6') => edt_answer.insert_char('6'),
+                    KeyCode::Char('7') => edt_answer.insert_char('7'),
+                    KeyCode::Char('8') => edt_answer.insert_char('8'),
+                    KeyCode::Char('9') => edt_answer.insert_char('9'),
+                    KeyCode::Char('*') => edt_answer.insert_char('*'),
+                    KeyCode::Char('/') => edt_answer.insert_char('/'),
+                    KeyCode::Char('+') => edt_answer.insert_char('+'),
+                    KeyCode::Char('-') => edt_answer.insert_char('-'),
+                    KeyCode::Char('(') => edt_answer.insert_char('('),
+                    KeyCode::Char(')') => edt_answer.insert_char(')'),
+                    KeyCode::Char(' ') => edt_answer.insert_char(' '),
+                    KeyCode::Backspace => {
+                        edt_answer.delete_char();
+                    }
+                    _ => {}
                 }
             }
         }
     })
 }
 
-fn render(frame: &mut Frame) {
+fn render(frame: &mut Frame, edt_answer: &mut TextArea) {
     let area = frame.area();
     let zero_border = Block::default()
         .borders(Borders::all())
         .style(Style::default().fg(Color::Reset));
 
     let hor_split = Layout::horizontal([Constraint::Ratio(2, 3), Constraint::Ratio(1, 3)]);
+    let ver_split = Layout::vertical([Constraint::Ratio(1, 8), Constraint::Fill(1)]);
 
     let science_split = Layout::vertical([
         Constraint::Fill(1),
@@ -94,7 +126,8 @@ fn render(frame: &mut Frame) {
         Constraint::Fill(1),
     ]);
 
-    let [calculate, history] = hor_split.areas(area);
+    let [left, history] = hor_split.areas(area);
+    let [answer, calculate] = ver_split.areas(left);
 
     let [
         one_col,
@@ -153,9 +186,12 @@ fn render(frame: &mut Frame) {
     frame.render_widget(Paragraph::new(".").block(zero_border.clone()), point);
     frame.render_widget(Paragraph::new("=").block(zero_border.clone()), equal);
     frame.render_widget(Paragraph::new("+").block(zero_border.clone()), add);
+
+    edt_answer.set_block(Block::default().borders(Borders::ALL));
+    frame.render_widget(edt_answer.widget(), answer);
 }
 
-fn bodmas(question: String) {
+fn bodmas(question: String) -> String {
     let mut equation: Vec<String> = split_all(question);
     let mut brackets = false;
     let mut index = 0;
@@ -190,7 +226,7 @@ fn bodmas(question: String) {
         }
     }
     let answer = dmas(equation);
-    println!("{}", answer[0]);
+    answer[0].clone()
 }
 
 fn split_all(question: String) -> Vec<String> {
@@ -212,7 +248,6 @@ fn split_all(question: String) -> Vec<String> {
     if value != "".to_string() {
         equation.push(value);
     }
-    println!("{:?}", equation);
     equation
 }
 
