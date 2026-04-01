@@ -1,4 +1,4 @@
-use std::fmt::format;
+use std::f64::consts::{E, PI};
 
 use color_eyre::eyre::Ok;
 use ratatui::{
@@ -15,6 +15,7 @@ pub fn main() -> color_eyre::Result<()> {
     let mut edt_answer = TextArea::default();
     let mut edt_history = TextArea::default();
     let mut answered: bool = false;
+    let mut saved_answer = String::new();
     ratatui::run(|terminal| {
         loop {
             terminal.draw(|frame| render(frame, &mut edt_answer, &mut edt_history))?;
@@ -33,6 +34,7 @@ pub fn main() -> color_eyre::Result<()> {
                         let question: String = edt_answer.lines().join("\n");
                         let answer = bodmas(question);
                         edt_answer.insert_str(format!(" = {}", answer));
+                        saved_answer = answer;
                         answered = true;
                         let mut question: String = edt_answer.lines().join("\n");
                         question = question.replace(" ", "");
@@ -56,6 +58,24 @@ pub fn main() -> color_eyre::Result<()> {
                     KeyCode::Char('(') => edt_answer.insert_char('('),
                     KeyCode::Char(')') => edt_answer.insert_char(')'),
                     KeyCode::Char(' ') => edt_answer.insert_char(' '),
+                    KeyCode::Char('.') => edt_answer.insert_char('.'),
+                    KeyCode::Char('^') => edt_answer.insert_char('^'),
+                    KeyCode::Char('e') => edt_answer.insert_char('ℯ'),
+                    KeyCode::Char('A') => {
+                        edt_answer.insert_str(saved_answer.clone());
+                    }
+                    KeyCode::Char('P') => edt_answer.insert_char('π'),
+                    KeyCode::Char('s') if key.modifiers.contains(event::KeyModifiers::SHIFT) => {}
+                    KeyCode::Char('s') => {}
+                    KeyCode::Char('c') if key.modifiers.contains(event::KeyModifiers::CONTROL) => {}
+                    KeyCode::Char('c') => {}
+                    KeyCode::Char('t') if key.modifiers.contains(event::KeyModifiers::SHIFT) => {}
+                    KeyCode::Char('t') => {}
+                    KeyCode::Delete => {
+                        while !edt_history.is_empty() {
+                            edt_history.delete_char();
+                        }
+                    }
                     KeyCode::Backspace => {
                         edt_answer.delete_char();
                     }
@@ -163,7 +183,7 @@ fn render(frame: &mut Frame, edt_answer: &mut TextArea, edt_history: &mut TextAr
     let [seven, eight, nine, divide] = six_split.areas(six_col);
     let [four, five, six, multiply] = seven_split.areas(seven_col);
     let [one, two, three, minus] = eight_split.areas(eight_col);
-    let [zero, point, equal, add] = nine_split.areas(nine_col);
+    let [zero, point, ans, add] = nine_split.areas(nine_col);
 
     frame.render_widget(Paragraph::new("sin(").block(zero_border.clone()), sin);
     frame.render_widget(Paragraph::new("cos(").block(zero_border.clone()), cos);
@@ -199,7 +219,7 @@ fn render(frame: &mut Frame, edt_answer: &mut TextArea, edt_history: &mut TextAr
     frame.render_widget(Paragraph::new("-").block(zero_border.clone()), minus);
     frame.render_widget(Paragraph::new("0").block(zero_border.clone()), zero);
     frame.render_widget(Paragraph::new(".").block(zero_border.clone()), point);
-    frame.render_widget(Paragraph::new("=").block(zero_border.clone()), equal);
+    frame.render_widget(Paragraph::new("ANS").block(zero_border.clone()), ans);
     frame.render_widget(Paragraph::new("+").block(zero_border.clone()), add);
 
     edt_answer.set_block(Block::default().borders(Borders::ALL));
@@ -251,8 +271,12 @@ fn split_all(question: String) -> Vec<String> {
     let mut equation: Vec<String> = vec![];
     let mut value: String = "".to_string();
     for c in question.chars() {
-        if c.is_numeric() {
+        if c.is_numeric() || c == '.' {
             value = format!("{}{}", value, c);
+        } else if c == 'π' {
+            equation.push(PI.to_string());
+        } else if c == 'ℯ' {
+            equation.push(E.to_string());
         } else {
             if value != "".to_string() {
                 equation.push(value.clone());
@@ -275,6 +299,7 @@ fn dmas(mut equation: Vec<String>) -> Vec<String> {
     let mut multiply = false;
     let mut add = false;
     let mut subtract = false;
+    let mut power = false;
 
     while equation.len() > 1 {
         if !divide {
@@ -303,6 +328,21 @@ fn dmas(mut equation: Vec<String>) -> Vec<String> {
                 if index == equation.len() - 1 {
                     index = 0;
                     multiply = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !power {
+            if equation[index].as_str() == "^" {
+                let digits: Vec<f64> = numbers(&equation[index - 1], &equation[index + 1]);
+                equation[index - 1] = (digits[0].powf(digits[1])).to_string();
+                equation.remove(index);
+                equation.remove(index);
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    power = true;
                 } else {
                     index += 1;
                 }
