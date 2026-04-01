@@ -13,16 +13,31 @@ use ratatui_textarea::TextArea;
 pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let mut edt_answer = TextArea::default();
+    let mut edt_history = TextArea::default();
+    let mut answered: bool = false;
     ratatui::run(|terminal| {
         loop {
-            terminal.draw(|frame| render(frame, &mut edt_answer))?;
+            terminal.draw(|frame| render(frame, &mut edt_answer, &mut edt_history))?;
             if let Event::Key(key) = event::read()? {
+                if answered == true {
+                    answered = false;
+                    let question: String = edt_answer.lines().join("\n");
+                    for _ in 0..question.len() {
+                        edt_answer.delete_char();
+                    }
+                    edt_answer.delete_newline();
+                }
                 match key.code {
                     KeyCode::Esc => break Ok(()),
                     KeyCode::Enter => {
                         let question: String = edt_answer.lines().join("\n");
                         let answer = bodmas(question);
-                        edt_answer.insert_str(format!(" = {}", &answer));
+                        edt_answer.insert_str(format!(" = {}", answer));
+                        answered = true;
+                        let mut question: String = edt_answer.lines().join("\n");
+                        question = question.replace(" ", "");
+                        edt_history.insert_str(question);
+                        edt_history.insert_newline();
                     }
                     KeyCode::Char('0') => edt_answer.insert_char('0'),
                     KeyCode::Char('1') => edt_answer.insert_char('1'),
@@ -51,7 +66,7 @@ pub fn main() -> color_eyre::Result<()> {
     })
 }
 
-fn render(frame: &mut Frame, edt_answer: &mut TextArea) {
+fn render(frame: &mut Frame, edt_answer: &mut TextArea, edt_history: &mut TextArea) {
     let area = frame.area();
     let zero_border = Block::default()
         .borders(Borders::all())
@@ -189,6 +204,9 @@ fn render(frame: &mut Frame, edt_answer: &mut TextArea) {
 
     edt_answer.set_block(Block::default().borders(Borders::ALL));
     frame.render_widget(edt_answer.widget(), answer);
+
+    edt_history.set_block(Block::default().borders(Borders::ALL));
+    frame.render_widget(edt_history.widget(), history);
 }
 
 fn bodmas(question: String) -> String {
@@ -206,7 +224,7 @@ fn bodmas(question: String) -> String {
                     } else {
                         let mini_answer = dmas(mini_equation);
                         equation[index] = mini_answer[0].clone();
-                        for j in (index + 1)..=i {
+                        for _ in (index + 1)..=i {
                             equation.remove(index + 1);
                         }
                         break;
