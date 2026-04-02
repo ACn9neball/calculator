@@ -127,6 +127,10 @@ pub fn main() -> color_eyre::Result<()> {
                         edt_answer.insert_char('^');
                         highlight = change_highlight(10, highlight);
                     }
+                    KeyCode::Char('!') => {
+                        edt_answer.insert_char('!');
+                        highlight = change_highlight(16, highlight);
+                    }
                     KeyCode::Char('e') => {
                         edt_answer.insert_char('ℯ');
                         highlight = change_highlight(8, highlight);
@@ -345,7 +349,7 @@ fn render(
     let [sin, cos, tan, pi] = one_split.areas(one_col);
     let [asin, acos, atan, e] = two_split.areas(two_col);
     let [sqrt, power, log, ln] = three_split.areas(three_col);
-    let [open, close, abs, mods] = four_split.areas(four_col);
+    let [open, close, abs, fac] = four_split.areas(four_col);
     let [dec, bin, hex, oct] = five_split.areas(five_col);
     let [seven, eight, nine, divide] = six_split.areas(six_col);
     let [four, five, six, multiply] = seven_split.areas(seven_col);
@@ -353,15 +357,15 @@ fn render(
     let [zero, point, ans, add] = nine_split.areas(nine_col);
 
     let locations: Vec<Rect> = vec![
-        sin, cos, tan, pi, asin, acos, atan, e, sqrt, power, log, ln, open, close, abs, mods, dec,
+        sin, cos, tan, pi, asin, acos, atan, e, sqrt, power, log, ln, open, close, abs, fac, dec,
         bin, hex, oct, seven, eight, nine, divide, four, five, six, multiply, one, two, three,
         minus, zero, point, ans, add,
     ];
 
     let label: Vec<&str> = vec![
         "sin(", "cos(", "tan(", "PI", "asin(", "acos(", "atan(", "e", "sqrt(", "^", "log(", "ln(",
-        "(", ")", "abs(", "MOD", "DEC", "BIN", "HEX", "OCT", "7", "8", "9", "/", "4", "5", "6",
-        "*", "1", "2", "3", "-", "0", ".", "ANS", "+",
+        "(", ")", "abs(", "!", "DEC", "BIN", "HEX", "OCT", "7", "8", "9", "/", "4", "5", "6", "*",
+        "1", "2", "3", "-", "0", ".", "ANS", "+",
     ];
 
     for i in 1..=36 {
@@ -747,6 +751,7 @@ fn dmas(mut equation: Vec<String>) -> Vec<String> {
     let mut add = false;
     let mut subtract = false;
     let mut power = false;
+    let mut factoral = false;
 
     while equation.len() > 1 {
         if !divide {
@@ -790,6 +795,24 @@ fn dmas(mut equation: Vec<String>) -> Vec<String> {
                 if index == equation.len() - 1 {
                     index = 0;
                     power = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !factoral {
+            if equation[index].as_str() == "!" {
+                let digits: i64 = equation[index - 1].parse().unwrap_or(0);
+                let mut result = 1;
+                for i in 2..=digits {
+                    result *= i;
+                }
+                equation[index - 1] = result.to_string();
+                equation.remove(index);
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    factoral = true;
                 } else {
                     index += 1;
                 }
