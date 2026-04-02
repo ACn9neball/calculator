@@ -4,21 +4,30 @@ use color_eyre::eyre::Ok;
 use ratatui::{
     Frame,
     crossterm::event::{self, Event, KeyCode},
-    layout::{Constraint, Layout},
-    style::{Color, Style},
+    layout::{Alignment, Constraint, Layout, Rect},
+    style::{Color, Style, Stylize},
     widgets::{Block, Borders, Paragraph},
 };
 use ratatui_textarea::TextArea;
 
 pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
+
+    let mut highlight: Vec<bool> = vec![];
+
+    for _ in 0..=37 {
+        highlight.push(false);
+    }
+
     let mut edt_answer = TextArea::default();
     let mut edt_history = TextArea::default();
     let mut answered: bool = false;
     let mut saved_answer = String::new();
     ratatui::run(|terminal| {
         loop {
-            terminal.draw(|frame| render(frame, &mut edt_answer, &mut edt_history))?;
+            terminal.draw(|frame| {
+                render(frame, &mut edt_answer, &mut edt_history, highlight.clone())
+            })?;
             if let Event::Key(key) = event::read()? {
                 if answered == true {
                     answered = false;
@@ -40,31 +49,96 @@ pub fn main() -> color_eyre::Result<()> {
                         question = question.replace(" ", "");
                         edt_history.insert_str(question);
                         edt_history.insert_newline();
+                        highlight = change_highlight(0, highlight);
                     }
-                    KeyCode::Char('0') => edt_answer.insert_char('0'),
-                    KeyCode::Char('1') => edt_answer.insert_char('1'),
-                    KeyCode::Char('2') => edt_answer.insert_char('2'),
-                    KeyCode::Char('3') => edt_answer.insert_char('3'),
-                    KeyCode::Char('4') => edt_answer.insert_char('4'),
-                    KeyCode::Char('5') => edt_answer.insert_char('5'),
-                    KeyCode::Char('6') => edt_answer.insert_char('6'),
-                    KeyCode::Char('7') => edt_answer.insert_char('7'),
-                    KeyCode::Char('8') => edt_answer.insert_char('8'),
-                    KeyCode::Char('9') => edt_answer.insert_char('9'),
-                    KeyCode::Char('*') => edt_answer.insert_char('*'),
-                    KeyCode::Char('/') => edt_answer.insert_char('/'),
-                    KeyCode::Char('+') => edt_answer.insert_char('+'),
-                    KeyCode::Char('-') => edt_answer.insert_char('-'),
-                    KeyCode::Char('(') => edt_answer.insert_char('('),
-                    KeyCode::Char(')') => edt_answer.insert_char(')'),
-                    KeyCode::Char(' ') => edt_answer.insert_char(' '),
-                    KeyCode::Char('.') => edt_answer.insert_char('.'),
-                    KeyCode::Char('^') => edt_answer.insert_char('^'),
-                    KeyCode::Char('e') => edt_answer.insert_char('ℯ'),
+                    KeyCode::Char('0') => {
+                        edt_answer.insert_char('0');
+                        highlight = change_highlight(33, highlight);
+                    }
+                    KeyCode::Char('1') => {
+                        edt_answer.insert_char('1');
+                        highlight = change_highlight(29, highlight);
+                    }
+                    KeyCode::Char('2') => {
+                        edt_answer.insert_char('2');
+                        highlight = change_highlight(30, highlight);
+                    }
+                    KeyCode::Char('3') => {
+                        edt_answer.insert_char('3');
+                        highlight = change_highlight(31, highlight);
+                    }
+                    KeyCode::Char('4') => {
+                        edt_answer.insert_char('4');
+                        highlight = change_highlight(25, highlight);
+                    }
+                    KeyCode::Char('5') => {
+                        edt_answer.insert_char('5');
+                        highlight = change_highlight(26, highlight);
+                    }
+                    KeyCode::Char('6') => {
+                        edt_answer.insert_char('6');
+                        highlight = change_highlight(27, highlight);
+                    }
+                    KeyCode::Char('7') => {
+                        edt_answer.insert_char('7');
+                        highlight = change_highlight(21, highlight);
+                    }
+                    KeyCode::Char('8') => {
+                        edt_answer.insert_char('8');
+                        highlight = change_highlight(22, highlight);
+                    }
+                    KeyCode::Char('9') => {
+                        edt_answer.insert_char('9');
+                        highlight = change_highlight(23, highlight);
+                    }
+                    KeyCode::Char('*') => {
+                        edt_answer.insert_char('*');
+                        highlight = change_highlight(28, highlight);
+                    }
+                    KeyCode::Char('/') => {
+                        edt_answer.insert_char('/');
+                        highlight = change_highlight(24, highlight);
+                    }
+                    KeyCode::Char('+') => {
+                        edt_answer.insert_char('+');
+                        highlight = change_highlight(36, highlight)
+                    }
+                    KeyCode::Char('-') => {
+                        edt_answer.insert_char('-');
+                        highlight = change_highlight(32, highlight);
+                    }
+                    KeyCode::Char('(') => {
+                        edt_answer.insert_char('(');
+                        highlight = change_highlight(13, highlight);
+                    }
+                    KeyCode::Char(')') => {
+                        edt_answer.insert_char(')');
+                        highlight = change_highlight(14, highlight);
+                    }
+                    KeyCode::Char(' ') => {
+                        edt_answer.insert_char(' ');
+                        highlight = change_highlight(37, highlight);
+                    }
+                    KeyCode::Char('.') => {
+                        edt_answer.insert_char('.');
+                        highlight = change_highlight(34, highlight)
+                    }
+                    KeyCode::Char('^') => {
+                        edt_answer.insert_char('^');
+                        highlight = change_highlight(10, highlight);
+                    }
+                    KeyCode::Char('e') => {
+                        edt_answer.insert_char('ℯ');
+                        highlight = change_highlight(8, highlight);
+                    }
                     KeyCode::Char('A') => {
                         edt_answer.insert_str(saved_answer.clone());
+                        highlight = change_highlight(35, highlight);
                     }
-                    KeyCode::Char('P') => edt_answer.insert_char('π'),
+                    KeyCode::Char('P') => {
+                        edt_answer.insert_char('π');
+                        highlight = change_highlight(4, highlight);
+                    }
                     KeyCode::Char('s') if key.modifiers.contains(event::KeyModifiers::SHIFT) => {}
                     KeyCode::Char('s') => {}
                     KeyCode::Char('c') if key.modifiers.contains(event::KeyModifiers::CONTROL) => {}
@@ -75,9 +149,11 @@ pub fn main() -> color_eyre::Result<()> {
                         while !edt_history.is_empty() {
                             edt_history.delete_char();
                         }
+                        highlight = change_highlight(0, highlight);
                     }
                     KeyCode::Backspace => {
                         edt_answer.delete_char();
+                        highlight = change_highlight(37, highlight);
                     }
                     _ => {}
                 }
@@ -86,9 +162,14 @@ pub fn main() -> color_eyre::Result<()> {
     })
 }
 
-fn render(frame: &mut Frame, edt_answer: &mut TextArea, edt_history: &mut TextArea) {
+fn render(
+    frame: &mut Frame,
+    edt_answer: &mut TextArea,
+    edt_history: &mut TextArea,
+    highlights: Vec<bool>,
+) {
     let area = frame.area();
-    let zero_border = Block::default()
+    let border = Block::default()
         .borders(Borders::all())
         .style(Style::default().fg(Color::Reset));
 
@@ -185,48 +266,63 @@ fn render(frame: &mut Frame, edt_answer: &mut TextArea, edt_history: &mut TextAr
     let [one, two, three, minus] = eight_split.areas(eight_col);
     let [zero, point, ans, add] = nine_split.areas(nine_col);
 
-    frame.render_widget(Paragraph::new("sin(").block(zero_border.clone()), sin);
-    frame.render_widget(Paragraph::new("cos(").block(zero_border.clone()), cos);
-    frame.render_widget(Paragraph::new("tan(").block(zero_border.clone()), tan);
-    frame.render_widget(Paragraph::new("PI").block(zero_border.clone()), pi);
-    frame.render_widget(Paragraph::new("asin(").block(zero_border.clone()), asin);
-    frame.render_widget(Paragraph::new("acos(").block(zero_border.clone()), acos);
-    frame.render_widget(Paragraph::new("atan(").block(zero_border.clone()), atan);
-    frame.render_widget(Paragraph::new("e").block(zero_border.clone()), e);
-    frame.render_widget(Paragraph::new("sqrt(").block(zero_border.clone()), sqrt);
-    frame.render_widget(Paragraph::new("^").block(zero_border.clone()), power);
-    frame.render_widget(Paragraph::new("log(").block(zero_border.clone()), log);
-    frame.render_widget(Paragraph::new("ln(").block(zero_border.clone()), ln);
-    frame.render_widget(Paragraph::new("(").block(zero_border.clone()), open);
-    frame.render_widget(Paragraph::new(")").block(zero_border.clone()), close);
-    frame.render_widget(Paragraph::new("abs(").block(zero_border.clone()), abs);
-    frame.render_widget(Paragraph::new("MOD").block(zero_border.clone()), mods);
-    frame.render_widget(Paragraph::new("MC").block(zero_border.clone()), mc);
-    frame.render_widget(Paragraph::new("MR").block(zero_border.clone()), mr);
-    frame.render_widget(Paragraph::new("M+").block(zero_border.clone()), m_plus);
-    frame.render_widget(Paragraph::new("M-").block(zero_border.clone()), m_minus);
-    frame.render_widget(Paragraph::new("7").block(zero_border.clone()), seven);
-    frame.render_widget(Paragraph::new("8").block(zero_border.clone()), eight);
-    frame.render_widget(Paragraph::new("9").block(zero_border.clone()), nine);
-    frame.render_widget(Paragraph::new("/").block(zero_border.clone()), divide);
-    frame.render_widget(Paragraph::new("4").block(zero_border.clone()), four);
-    frame.render_widget(Paragraph::new("5").block(zero_border.clone()), five);
-    frame.render_widget(Paragraph::new("6").block(zero_border.clone()), six);
-    frame.render_widget(Paragraph::new("*").block(zero_border.clone()), multiply);
-    frame.render_widget(Paragraph::new("1").block(zero_border.clone()), one);
-    frame.render_widget(Paragraph::new("2").block(zero_border.clone()), two);
-    frame.render_widget(Paragraph::new("3").block(zero_border.clone()), three);
-    frame.render_widget(Paragraph::new("-").block(zero_border.clone()), minus);
-    frame.render_widget(Paragraph::new("0").block(zero_border.clone()), zero);
-    frame.render_widget(Paragraph::new(".").block(zero_border.clone()), point);
-    frame.render_widget(Paragraph::new("ANS").block(zero_border.clone()), ans);
-    frame.render_widget(Paragraph::new("+").block(zero_border.clone()), add);
+    let locations: Vec<Rect> = vec![
+        sin, cos, tan, pi, asin, acos, atan, e, sqrt, power, log, ln, open, close, abs, mods, mc,
+        mr, m_plus, m_minus, seven, eight, nine, divide, four, five, six, multiply, one, two,
+        three, minus, zero, point, ans, add,
+    ];
 
-    edt_answer.set_block(Block::default().borders(Borders::ALL));
+    let label: Vec<&str> = vec![
+        "sin(", "cos(", "tan(", "PI", "asin(", "acos(", "atan(", "e", "sqrt(", "^", "log(", "ln(",
+        "(", ")", "abs(", "MOD", "MC", "MR", "M+", "M-", "7", "8", "9", "/", "4", "5", "6", "*",
+        "1", "2", "3", "-", "0", ".", "ANS", "+",
+    ];
+
+    for i in 1..=36 {
+        draw_widget(
+            locations[i - 1],
+            label[i - 1],
+            highlights[i],
+            border.clone(),
+            frame,
+        );
+    }
+
+    let a_color;
+    if highlights[37] == true {
+        a_color = Color::Green;
+    } else {
+        a_color = Color::Reset;
+    }
+    edt_answer.set_block(Block::default().borders(Borders::ALL).fg(a_color));
     frame.render_widget(edt_answer.widget(), answer);
 
-    edt_history.set_block(Block::default().borders(Borders::ALL));
+    let h_color;
+    if highlights[0] == true {
+        h_color = Color::Green;
+    } else {
+        h_color = Color::Reset;
+    }
+    edt_history.set_block(Block::default().borders(Borders::ALL).fg(h_color));
     frame.render_widget(edt_history.widget(), history);
+}
+
+fn draw_widget(area: Rect, label: &str, highlight: bool, border: Block, frame: &mut Frame) {
+    let color;
+
+    if highlight {
+        color = Color::Green;
+    } else {
+        color = Color::Reset;
+    }
+
+    frame.render_widget(
+        Paragraph::new(label)
+            .alignment(Alignment::Center)
+            .block(border.fg(color))
+            .fg(color),
+        area,
+    );
 }
 
 fn bodmas(question: String) -> String {
@@ -386,4 +482,15 @@ fn numbers(num1: &str, num2: &str) -> Vec<f64> {
     let value1: f64 = num1.parse().unwrap_or(0.0);
     let value2: f64 = num2.parse().unwrap_or(0.0);
     vec![value1, value2]
+}
+
+fn change_highlight(index: usize, mut highlights: Vec<bool>) -> Vec<bool> {
+    for i in 0..highlights.len() {
+        if i == index {
+            highlights[i] = true;
+        } else {
+            highlights[i] = false;
+        }
+    }
+    highlights
 }
