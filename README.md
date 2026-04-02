@@ -14,22 +14,15 @@ An in-depth paragraph about your project and overview of use.
 
 ### Installing
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+* Need Cargo i think
 
 ### Executing program
-
-* calculator commands
-
+```
+* calculator
+```
 ## Keybindings
 * use keybinding such as 'S' for asin, 'A' for ans, ..
 
-## Help
-
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
 ## Version History
 
 * 0.1
