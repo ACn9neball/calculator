@@ -179,6 +179,58 @@ pub fn main() -> color_eyre::Result<()> {
                         edt_answer.insert_str("log(");
                         highlight = change_highlight(11, highlight);
                     }
+                    KeyCode::Char('D') => {
+                        let mut question: String = edt_answer.lines().join("\n");
+                        let answer: f64 = bodmas(question).parse().unwrap_or(0.0);
+                        edt_answer.insert_str(format!(" = {}", answer as u64));
+                        highlight = change_highlight(17, highlight);
+                        question = edt_answer.lines().join("\n");
+                        question = question.replace(" ", "");
+                        edt_history.insert_str(question);
+                        edt_history.insert_newline();
+                        highlight = change_highlight(0, highlight);
+                        saved_answer = answer.to_string();
+                        answered = true;
+                    }
+                    KeyCode::Char('B') => {
+                        let mut question: String = edt_answer.lines().join("\n");
+                        let answer: f64 = bodmas(question).parse().unwrap_or(0.0);
+                        edt_answer.insert_str(format!(" = {:b}", answer as u64));
+                        highlight = change_highlight(18, highlight);
+                        question = edt_answer.lines().join("\n");
+                        question = question.replace(" ", "");
+                        edt_history.insert_str(question);
+                        edt_history.insert_newline();
+                        highlight = change_highlight(0, highlight);
+                        saved_answer = answer.to_string();
+                        answered = true;
+                    }
+                    KeyCode::Char('H') => {
+                        let mut question: String = edt_answer.lines().join("\n");
+                        let answer: f64 = bodmas(question).parse().unwrap_or(0.0);
+                        edt_answer.insert_str(format!(" = {:x}", answer as u64));
+                        highlight = change_highlight(19, highlight);
+                        question = edt_answer.lines().join("\n");
+                        question = question.replace(" ", "");
+                        edt_history.insert_str(question);
+                        edt_history.insert_newline();
+                        highlight = change_highlight(0, highlight);
+                        saved_answer = answer.to_string();
+                        answered = true;
+                    }
+                    KeyCode::Char('O') => {
+                        let mut question: String = edt_answer.lines().join("\n");
+                        let answer: f64 = bodmas(question).parse().unwrap_or(0.0);
+                        edt_answer.insert_str(format!(" = {:o}", answer as u64));
+                        highlight = change_highlight(20, highlight);
+                        question = edt_answer.lines().join("\n");
+                        question = question.replace(" ", "");
+                        edt_history.insert_str(question);
+                        edt_history.insert_newline();
+                        highlight = change_highlight(0, highlight);
+                        saved_answer = answer.to_string();
+                        answered = true;
+                    }
                     KeyCode::Delete => {
                         while !edt_history.is_empty() {
                             edt_history.delete_char();
@@ -294,22 +346,22 @@ fn render(
     let [asin, acos, atan, e] = two_split.areas(two_col);
     let [sqrt, power, log, ln] = three_split.areas(three_col);
     let [open, close, abs, mods] = four_split.areas(four_col);
-    let [mc, mr, m_plus, m_minus] = five_split.areas(five_col);
+    let [dec, bin, hex, oct] = five_split.areas(five_col);
     let [seven, eight, nine, divide] = six_split.areas(six_col);
     let [four, five, six, multiply] = seven_split.areas(seven_col);
     let [one, two, three, minus] = eight_split.areas(eight_col);
     let [zero, point, ans, add] = nine_split.areas(nine_col);
 
     let locations: Vec<Rect> = vec![
-        sin, cos, tan, pi, asin, acos, atan, e, sqrt, power, log, ln, open, close, abs, mods, mc,
-        mr, m_plus, m_minus, seven, eight, nine, divide, four, five, six, multiply, one, two,
-        three, minus, zero, point, ans, add,
+        sin, cos, tan, pi, asin, acos, atan, e, sqrt, power, log, ln, open, close, abs, mods, dec,
+        bin, hex, oct, seven, eight, nine, divide, four, five, six, multiply, one, two, three,
+        minus, zero, point, ans, add,
     ];
 
     let label: Vec<&str> = vec![
         "sin(", "cos(", "tan(", "PI", "asin(", "acos(", "atan(", "e", "sqrt(", "^", "log(", "ln(",
-        "(", ")", "abs(", "MOD", "MC", "MR", "M+", "M-", "7", "8", "9", "/", "4", "5", "6", "*",
-        "1", "2", "3", "-", "0", ".", "ANS", "+",
+        "(", ")", "abs(", "MOD", "DEC", "BIN", "HEX", "OCT", "7", "8", "9", "/", "4", "5", "6",
+        "*", "1", "2", "3", "-", "0", ".", "ANS", "+",
     ];
 
     for i in 1..=36 {
