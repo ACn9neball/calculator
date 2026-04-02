@@ -135,16 +135,50 @@ pub fn main() -> color_eyre::Result<()> {
                         edt_answer.insert_str(saved_answer.clone());
                         highlight = change_highlight(35, highlight);
                     }
+                    KeyCode::Char('a') => {
+                        edt_answer.insert_str("abs(");
+                        highlight = change_highlight(15, highlight);
+                    }
                     KeyCode::Char('P') => {
                         edt_answer.insert_char('π');
                         highlight = change_highlight(4, highlight);
                     }
-                    KeyCode::Char('s') if key.modifiers.contains(event::KeyModifiers::SHIFT) => {}
-                    KeyCode::Char('s') => {}
-                    KeyCode::Char('c') if key.modifiers.contains(event::KeyModifiers::CONTROL) => {}
-                    KeyCode::Char('c') => {}
-                    KeyCode::Char('t') if key.modifiers.contains(event::KeyModifiers::SHIFT) => {}
-                    KeyCode::Char('t') => {}
+                    KeyCode::Char('S') => {
+                        edt_answer.insert_str("asin(");
+                        highlight = change_highlight(5, highlight);
+                    }
+                    KeyCode::Char('s') => {
+                        edt_answer.insert_str("sin(");
+                        highlight = change_highlight(1, highlight);
+                    }
+                    KeyCode::Char('C') => {
+                        edt_answer.insert_str("acos(");
+                        highlight = change_highlight(6, highlight);
+                    }
+                    KeyCode::Char('c') => {
+                        edt_answer.insert_str("cos(");
+                        highlight = change_highlight(2, highlight);
+                    }
+                    KeyCode::Char('T') => {
+                        edt_answer.insert_str("atan(");
+                        highlight = change_highlight(7, highlight);
+                    }
+                    KeyCode::Char('t') => {
+                        edt_answer.insert_str("tan(");
+                        highlight = change_highlight(3, highlight);
+                    }
+                    KeyCode::Char('Q') => {
+                        edt_answer.insert_str("sqrt(");
+                        highlight = change_highlight(9, highlight);
+                    }
+                    KeyCode::Char('l') => {
+                        edt_answer.insert_str("ln(");
+                        highlight = change_highlight(12, highlight);
+                    }
+                    KeyCode::Char('L') => {
+                        edt_answer.insert_str("log(");
+                        highlight = change_highlight(11, highlight);
+                    }
                     KeyCode::Delete => {
                         while !edt_history.is_empty() {
                             edt_history.delete_char();
@@ -327,11 +361,274 @@ fn draw_widget(area: Rect, label: &str, highlight: bool, border: Block, frame: &
 
 fn bodmas(question: String) -> String {
     let mut equation: Vec<String> = split_all(question);
-    let mut brackets = false;
+    let mut conditions: Vec<bool> = vec![];
+    for _ in 0..11 {
+        conditions.push(false);
+    }
     let mut index = 0;
 
     while equation.len() > 1 {
-        if !brackets {
+        if !conditions[0] {
+            if equation[index] == "abs" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.abs();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[0] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[1] {
+            if equation[index] == "log" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.log(1.0);
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[1] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[2] {
+            if equation[index] == "ln" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.ln();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[2] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[3] {
+            if equation[index] == "asin" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.asin();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[3] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[4] {
+            if equation[index] == "acos" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.acos();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[4] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[5] {
+            if equation[index] == "atan" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.atan();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[5] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[6] {
+            if equation[index] == "sin" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.sin();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[6] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[7] {
+            if equation[index] == "cos" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.cos();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[7] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[8] {
+            if equation[index] == "tan" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.tan();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[8] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[9] {
+            if equation[index] == "sqrt" {
+                let mut mini_equation: Vec<String> = vec![];
+                for i in (index + 2)..equation.len() {
+                    if equation[i] != ")" {
+                        mini_equation.push(equation[i].clone());
+                    } else {
+                        let mini_answer = dmas(mini_equation.clone());
+                        let mut float_ans: f64 = mini_answer[0].parse().unwrap_or(0.0);
+                        float_ans = float_ans.sqrt();
+                        equation[index] = float_ans.to_string();
+                        for _ in index..i {
+                            equation.remove(index + 1);
+                        }
+                        break;
+                    }
+                }
+                index = 0;
+            } else {
+                if index == equation.len() - 1 {
+                    index = 0;
+                    conditions[9] = true;
+                } else {
+                    index += 1;
+                }
+            }
+        } else if !conditions[10] {
             if equation[index].as_str() == "(" {
                 let mut mini_equation: Vec<String> = vec![];
                 for i in (index + 1)..equation.len() {
@@ -350,7 +647,7 @@ fn bodmas(question: String) -> String {
             } else {
                 if index == equation.len() - 1 {
                     index = 0;
-                    brackets = true;
+                    conditions[10] = true;
                 } else {
                     index += 1;
                 }
@@ -373,6 +670,8 @@ fn split_all(question: String) -> Vec<String> {
             equation.push(PI.to_string());
         } else if c == 'ℯ' {
             equation.push(E.to_string());
+        } else if c.is_alphabetic() {
+            value = format!("{}{}", value, c);
         } else {
             if value != "".to_string() {
                 equation.push(value.clone());
