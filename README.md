@@ -1,33 +1,49 @@
-# Calculator TUI
+# Calculator
 
-Scientific tui calculator written in rust that uses keybindings to come out with floating numbers.
+---
 
-## Description
+## 📱 Basic Description
 
-An in-depth paragraph about your project and overview of use.
+Simple Rust TUI application for mathermatical calculations
 
-## Getting Started
+---
 
-### Dependencies
+## 🔍 Detailed Description
 
-* Linux machine
+A robust, terminal-based mathematical engine designed for engineers and students. Unlike standard CLI calculators, this tool focuses on expression
+evaluation, allowing users to input complex, multi-operator strings. It leverages Rust's precision and speed to handle everything from standard
+arithmetic to base-system conversions (Binary, Hex, Octal) within a responsive, keyboard-driven interface.
 
-### Installing
+---
 
-* Need Cargo i think
+## 🚀 Features
 
-### Executing program
+
+* **Core Feature 1:** BDMAS calculator
+* **Core Feature 2:** Basic ASMD (Addition, Subtraction, Multiplication and Division)
+* **Core Feature 3:** Trignometry
+* **Core Feature 4:** Number Systems (Binary, Decimal, Hexadecimal, Octadecimal)
+
+---
+
+## 🛠️ Languages & Tools Used
+
+List the programming languages, primary libraries, or frameworks that power the project.
+
+| :--- |
+
+ | **Rust** |
+ | **Ratatui** |
+| ---: |
+
+---
+
+## 💻 Quick Start
+
+```bash
+# Command to clone, build, or run the app
+git clone https://github.com/ACn9neball/calculator
+cd Calculator/
+cargo install --path
+calculator
 ```
-* calculator
-```
-## Keybindings
-* use keybinding such as 'S' for asin, 'A' for ans, ..
-
-## Version History
-
-* 0.1
-    * Initial Release
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details

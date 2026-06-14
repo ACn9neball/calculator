@@ -41,7 +41,7 @@ fn main() -> color_eyre::Result<()> {
                     KeyCode::Esc => break Ok(()),
                     KeyCode::Enter => {
                         let question: String = edt_answer.lines().join("\n");
-                        let answer = calculations::bodmas(question);
+                        let answer = calculations::bedmas(question);
                         edt_answer.insert_str(format!(" = {}", answer));
                         saved_answer = answer;
                         answered = true;
@@ -185,7 +185,7 @@ fn main() -> color_eyre::Result<()> {
                     }
                     KeyCode::Char('D') => {
                         let mut question: String = edt_answer.lines().join("\n");
-                        let answer: f64 = calculations::bodmas(question).parse().unwrap_or(0.0);
+                        let answer: f64 = calculations::bedmas(question).parse().unwrap_or(0.0);
                         edt_answer.insert_str(format!(" = {}", answer as u64));
                         highlight = change_highlight(17, highlight);
                         question = edt_answer.lines().join("\n");
@@ -198,7 +198,7 @@ fn main() -> color_eyre::Result<()> {
                     }
                     KeyCode::Char('B') => {
                         let mut question: String = edt_answer.lines().join("\n");
-                        let answer: f64 = calculations::bodmas(question).parse().unwrap_or(0.0);
+                        let answer: f64 = calculations::bedmas(question).parse().unwrap_or(0.0);
                         edt_answer.insert_str(format!(" = {:b}", answer as u64));
                         highlight = change_highlight(18, highlight);
                         question = edt_answer.lines().join("\n");
@@ -211,7 +211,7 @@ fn main() -> color_eyre::Result<()> {
                     }
                     KeyCode::Char('H') => {
                         let mut question: String = edt_answer.lines().join("\n");
-                        let answer: f64 = calculations::bodmas(question).parse().unwrap_or(0.0);
+                        let answer: f64 = calculations::bedmas(question).parse().unwrap_or(0.0);
                         edt_answer.insert_str(format!(" = {:x}", answer as u64));
                         highlight = change_highlight(19, highlight);
                         question = edt_answer.lines().join("\n");
@@ -224,7 +224,7 @@ fn main() -> color_eyre::Result<()> {
                     }
                     KeyCode::Char('O') => {
                         let mut question: String = edt_answer.lines().join("\n");
-                        let answer: f64 = calculations::bodmas(question).parse().unwrap_or(0.0);
+                        let answer: f64 = calculations::bedmas(question).parse().unwrap_or(0.0);
                         edt_answer.insert_str(format!(" = {:o}", answer as u64));
                         highlight = change_highlight(20, highlight);
                         question = edt_answer.lines().join("\n");

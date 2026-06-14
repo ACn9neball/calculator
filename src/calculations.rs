@@ -1,6 +1,6 @@
 use std::f64::consts::{E, PI};
 
-pub fn bodmas(question: String) -> String {
+pub fn bedmas(question: String) -> String {
     let mut equation: Vec<String> = split_all(question);
     let mut conditions: Vec<bool> = vec![];
     for _ in 0..11 {
